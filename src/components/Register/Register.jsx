@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword,signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword,sendEmailVerification,updateProfile} from "firebase/auth";
 import app from '../../firebase/firebase.config';
+import { Link } from 'react-router-dom';
 
 const auth = getAuth(app);
 
@@ -14,7 +15,7 @@ const Register = () => {
         event.preventDefault();
         setSuccess('');
         setError('');
-        
+
         // collect form data
         const fullName = event.target.name.value;
         const email = event.target.email.value;
@@ -48,13 +49,43 @@ const Register = () => {
             setSuccess('Form has been submitted successfully !');
             // Having submit form clear form data
             event.target.reset();
+             // user email validation
+            sendVarificationEmail(result.user);
+            //user update
+            updateUserData(result.user, fullName);
+            
         })
         .catch( error => {
             // console.error(error.message);
             setError(error.message);
         })
-
     }
+
+    // Varify send user send email
+    const sendVarificationEmail = (user) =>{
+        sendEmailVerification(user)
+        .then(result => {
+            console.log(result);
+            setSuccess('Verify your email address');
+        })
+        .catch(error => {
+            setError(error.message);
+        })
+    }
+
+    // User Update
+    const updateUserData = (user, name) => {
+        updateProfile(user, {
+            displayName: name
+        })
+            .then(() => {
+                console.log('user name updated')
+            })
+            .catch(error => {
+                setError(error.message);
+            })
+    }
+
         
     return (
         <div className='w-50 mx-auto'>
@@ -80,7 +111,10 @@ const Register = () => {
             </div>
             <button type="submit" className="btn btn-primary">Submit</button>
         </form>
-        
+        <p><small>If you already have account please
+            <Link to="/login"> Please Login</Link>
+        </small></p>
+       
         
        
     </div>
